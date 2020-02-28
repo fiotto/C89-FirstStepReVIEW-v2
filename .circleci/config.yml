@@ -1,33 +1,26 @@
 version: 2
 jobs:
   build:
-    working_directory: /book
     docker:
-      - image: vvakame/review
+      - image: vvakame/review:4.0
     steps:
       - checkout
-      - run: git submodule init && git submodule update
-
       - restore_cache:
           keys:
             - npm-cache-{{ checksum "package-lock.json" }}
-      - run: npm run global
-      - run: npm install --no-save
-      - run: bundle install --path vendor/bundle
+      - run:
+          name: Setup
+          command: npm install
       - save_cache:
           key: npm-cache-{{ checksum "package-lock.json" }}
           paths:
             - ./node_modules
-
-      - run: npm run check
-
-      - run: npm run pdf
+      - run:
+          name: Test
+          command: npm test
+      - run:
+          name: Build PDF
+          command: npm run pdf
       - store_artifacts:
-          path: ./articles/C89-FirstStepReVIEW-v2.pdf
-          destination: generated PDF data
-
-workflows:
-  version: 2
-  build_and_test:
-    jobs:
-      - build
+          path: ./articles/ReVIEW-Template.pdf
+          destination: ReVIEW-Template.pdf
